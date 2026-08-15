@@ -73,6 +73,13 @@ function initSchema() {
     db.run('ALTER TABLE comments ADD COLUMN attachment_type TEXT');
     db.run('ALTER TABLE comments ADD COLUMN attachment_data TEXT');
   }
+  const userColumns = db.exec('PRAGMA table_info(users)')[0]?.values.map(column => column[1]) || [];
+  if (!userColumns.includes('is_bot')) {
+    db.run('ALTER TABLE users ADD COLUMN is_bot INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!userColumns.includes('skills')) {
+    db.run("ALTER TABLE users ADD COLUMN skills TEXT DEFAULT 'Technical,Billing,General'");
+  }
   db.run(`
     CREATE TABLE IF NOT EXISTS notifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

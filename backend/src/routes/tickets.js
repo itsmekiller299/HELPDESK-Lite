@@ -3,6 +3,8 @@ const { getDb, run, get, all } = require('../db/schema');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { CATEGORIES, PRIORITIES, id, text } = require('../utils/validation');
 const { sendTicketEmail } = require('../services/email');
+const { autoRespondToTicket } = require('../services/auto-responder');
+const { autoAssignTicket } = require('../services/auto-assign');
 
 const router = express.Router();
 
@@ -138,6 +140,7 @@ router.post('/', authenticate, async (req, res) => {
   const result = run('INSERT INTO tickets (subject, description, category, priority, status, customer_id, auto_suggested) VALUES (?, ?, ?, ?, ?, ?, ?)', [subject.trim(), description.trim(), finalCategory, finalPriority, 'Open', req.user.id, autoSuggested]);
 
   const ticket = get('SELECT * FROM tickets WHERE id = ?', [result.lastId]);
+  const assignee = await autoAssignTicket(ticket);
   void sendTicketEmail({
     to: req.user.email,
     recipientName: req.user.name,
@@ -145,7 +148,8 @@ router.post('/', authenticate, async (req, res) => {
     subject: `Ticket #${ticket.id} created`,
     preview: `We received your support request: ${ticket.subject}`,
   });
-  res.status(201).json({ ...ticket, sla: computeSLA(ticket.priority, ticket.created_at), suggestedCategory, suggestedPriority });
+  await autoRespondToTicket(ticket);
+  res.status(201).json({ ...ticket, sla: computeSLA(ticket.priority, ticket.created_at), suggestedCategory, suggestedPriority, assignee: assignee ? { id: assignee.id, name: assignee.name, email: assignee.email } : null });
 });
 
 router.patch('/:id', authenticate, requireRole('Admin', 'Agent'), async (req, res) => {

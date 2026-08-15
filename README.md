@@ -41,9 +41,20 @@ npm run dev     # Starts on http://localhost:3000
 |------|-------|----------|
 | Admin | admin@helpdesk.com | admin123 |
 | Agent | agent@helpdesk.com | agent123 |
-| Agent | jane@helpdesk.com | agent123 |
+| Agent | | agent123 |
 | Customer | customer@helpdesk.com | customer123 |
 | Customer | sarah@helpdesk.com | customer123 |
+
+## Automatic Agent Responses
+When a customer creates a ticket, the backend instantly posts an automatic response from a dedicated bot agent, visible to the customer in the ticket conversation:
+| Bot | Handles |
+|-----|---------|
+| Technical Support Bot | Technical tickets |
+| Billing Support Bot | Billing tickets |
+| General Support Bot | General tickets |
+| Priority Support Bot | Critical-priority tickets (escalation) |
+
+These bot accounts are seeded automatically on server startup (`src/services/auto-responder.js`) and are excluded from the manual agent-assignment list.
 
 ## Seed Data
 The seed script creates 5 users, 6 tickets (with realistic varied statuses/priorities), 6 conversation comments, and 5 knowledge base articles so the app looks populated immediately on first run.

@@ -10,6 +10,8 @@ const kbRoutes = require('./routes/kb');
 const analyticsRoutes = require('./routes/analytics');
 const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
+const { ensureAutoAgents } = require('./services/auto-responder');
+const { ensureAgentSkills } = require('./services/auto-assign');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -46,7 +48,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-getDb().then(() => {
+getDb().then(async () => {
+  await ensureAutoAgents();
+  await ensureAgentSkills();
   app.listen(PORT, () => {
     console.log(`HelpDesk Lite API running on http://localhost:${PORT}`);
   });

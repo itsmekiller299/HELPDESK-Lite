@@ -37,7 +37,7 @@ router.get('/', authenticate, requireRole('Admin', 'Agent'), async (req, res) =>
 
 router.get('/agents', authenticate, requireRole('Admin', 'Agent'), async (req, res) => {
   await getDb();
-  const agents = all("SELECT id, name, email FROM users WHERE role IN ('Agent','Admin') ORDER BY name");
+  const agents = all("SELECT id, name, email, skills FROM users WHERE role IN ('Agent','Admin') AND is_bot = 0 ORDER BY name");
   res.json(agents);
 });
 
