@@ -40,8 +40,8 @@ npm run dev     # Starts on http://localhost:3000
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | admin@helpdesk.com | admin123 |
-| Agent | agent@helpdesk.com | agent123 |
-| Agent | | agent123 |
+| Agent | shiva123@gmail.com | agent123 |
+| Agent | mani123@gmail.com  | agent123 |
 | Customer | customer@helpdesk.com | customer123 |
 | Customer | sarah@helpdesk.com | customer123 |
 
