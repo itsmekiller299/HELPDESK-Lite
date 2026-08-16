@@ -5,6 +5,7 @@ const { CATEGORIES, PRIORITIES, id, text } = require('../utils/validation');
 const { sendTicketEmail } = require('../services/email');
 const { autoRespondToTicket } = require('../services/auto-responder');
 const { autoAssignTicket } = require('../services/auto-assign');
+const { summarizeConversation } = require('../services/summary');
 
 const router = express.Router();
 
@@ -116,6 +117,52 @@ router.get('/:id', authenticate, async (req, res) => {
   const customer = get('SELECT id, name, email FROM users WHERE id = ?', [ticket.customer_id]);
 
   res.json({ ...ticket, sla: computeSLA(ticket.priority, ticket.created_at), assignee, customer });
+});
+
+router.get('/:id/summary', authenticate, async (req, res) => {
+  await getDb();
+  const ticket = get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
+
+  if (!ticket) {
+    return res.status(404).json({ error: 'Ticket not found' });
+  }
+
+  if (req.user.role === 'Customer' && ticket.customer_id !== req.user.id) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  const internalFilter = req.user.role === 'Customer' ? 'AND c.is_internal = 0' : '';
+  const comments = all(`
+    SELECT c.content, c.created_at, u.name as user_name, u.role as user_role
+    FROM comments c JOIN users u ON c.user_id = u.id
+    WHERE c.ticket_id = ? ${internalFilter}
+    ORDER BY c.created_at ASC
+  `, [req.params.id]);
+
+  const assignee = ticket.assigned_to ? get('SELECT name FROM users WHERE id = ?', [ticket.assigned_to]) : null;
+  const customer = get('SELECT name FROM users WHERE id = ?', [ticket.customer_id]);
+  const lastComment = comments[comments.length - 1];
+
+  const summary = summarizeConversation({
+    subject: ticket.subject,
+    description: ticket.description,
+    comments,
+  });
+
+  res.json({
+    facts: {
+      subject: ticket.subject,
+      status: ticket.status,
+      priority: ticket.priority,
+      category: ticket.category,
+      assignee: assignee ? assignee.name : null,
+      customer: customer ? customer.name : null,
+      created_at: ticket.created_at,
+      last_activity: lastComment ? lastComment.created_at : ticket.updated_at,
+      replyCount: comments.length,
+    },
+    ...summary,
+  });
 });
 
 router.post('/', authenticate, async (req, res) => {
