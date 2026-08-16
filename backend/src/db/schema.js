@@ -1,9 +1,14 @@
 const initSqlJs = require('sql.js');
+const wasmBinary = require('./wasm');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = process.env.DATABASE_URL || path.join(__dirname, '..', '..', 'helpdesk.db');
+const DB_PATH = process.env.VERCEL
+  ? '/tmp/helpdesk.db'
+  : (process.env.DATABASE_URL || path.join(__dirname, '..', '..', 'helpdesk.db'));
+
+const BUNDLED_DB_PATH = path.join(__dirname, '..', '..', 'helpdesk.db');
 
 let db = null;
 
@@ -112,8 +117,11 @@ async function initMySqlSchema(pool) {
 }
 
 async function initSqlite() {
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({ wasmBinary });
   let sqliteDb;
+  if (!fs.existsSync(DB_PATH) && DB_PATH !== BUNDLED_DB_PATH && fs.existsSync(BUNDLED_DB_PATH)) {
+    fs.copyFileSync(BUNDLED_DB_PATH, DB_PATH);
+  }
   if (fs.existsSync(DB_PATH)) {
     const buffer = fs.readFileSync(DB_PATH);
     sqliteDb = new SQL.Database(buffer);
