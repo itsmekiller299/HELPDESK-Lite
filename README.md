@@ -2,6 +2,16 @@
 
 A lightweight customer support ticketing platform built for a district-level hackathon.
 
+## TL;DR
+
+**HelpDesk Lite** is a full-stack customer support ticketing system with:
+- **Frontend**: Next.js 16 (App Router), Tailwind CSS, Recharts, Lucide React — LiquidGlass/neumorphic UI
+- **Backend**: Node.js/Express, SQLite (sql.js) locally, MySQL (RDS) in production — JWT auth, bcrypt
+- **Key features**: Role-based auth (Admin/Agent/Customer), ticket lifecycle (Open→In Progress→Resolved→Closed), SLA tracking, conversation threads with internal notes, AI-powered ticket classification, dashboard analytics, knowledge base, **one-click conversation TL;DR summaries** (key points, open questions, participants)
+- **Auto-responses**: 4 specialized bots (Technical, Billing, General, Priority) reply instantly on ticket creation
+- **Deploy**: Frontend → Vercel, Backend → AWS EC2 (systemd), DB → AWS RDS MySQL
+- **Demo accounts**: admin@helpdesk.com/admin123, shiva123@gmail.com/agent123, customer@helpdesk.com/customer123
+
 ## Tech Stack
 - **Frontend:** Next.js (App Router), Tailwind CSS, Recharts, Lucide React
 - **Backend:** Node.js, Express, SQLite (via sql.js)
