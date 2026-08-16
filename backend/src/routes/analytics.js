@@ -19,12 +19,12 @@ function computeSLAStatus(priority, createdAt) {
 router.get('/', authenticate, requireRole('Admin', 'Agent'), async (req, res) => {
   await getDb();
 
-  const totalTickets = all('SELECT COUNT(*) as count FROM tickets')[0].count;
-  const byStatus = all('SELECT status, COUNT(*) as count FROM tickets GROUP BY status');
-  const byPriority = all('SELECT priority, COUNT(*) as count FROM tickets GROUP BY priority');
-  const byCategory = all('SELECT category, COUNT(*) as count FROM tickets GROUP BY category');
+  const totalTickets = (await all('SELECT COUNT(*) as count FROM tickets'))[0].count;
+  const byStatus = await all('SELECT status, COUNT(*) as count FROM tickets GROUP BY status');
+  const byPriority = await all('SELECT priority, COUNT(*) as count FROM tickets GROUP BY priority');
+  const byCategory = await all('SELECT category, COUNT(*) as count FROM tickets GROUP BY category');
 
-  const tickets = all('SELECT id, priority, status, created_at FROM tickets');
+  const tickets = await all('SELECT id, priority, status, created_at FROM tickets');
   let slaBreached = 0;
   let slaAtRisk = 0;
   let slaOnTrack = 0;
@@ -37,13 +37,13 @@ router.get('/', authenticate, requireRole('Admin', 'Agent'), async (req, res) =>
     else slaOnTrack++;
   });
 
-  const recentTickets = all(`
+  const recentTickets = await all(`
     SELECT t.*, u.name as customer_name
     FROM tickets t JOIN users u ON t.customer_id = u.id
     ORDER BY t.created_at DESC LIMIT 5
   `);
 
-  const agents = all(`
+  const agents = await all(`
     SELECT u.id, u.name, COUNT(t.id) as ticket_count
     FROM users u LEFT JOIN tickets t ON t.assigned_to = u.id
     WHERE u.role IN ('Agent', 'Admin')

@@ -45,6 +45,37 @@ npm install
 npm run dev     # Starts on http://localhost:3000
 ```
 
+## Deployment
+
+Architecture: **Frontend → Vercel**, **Backend → AWS EC2**, **Database → AWS RDS (MySQL)**.
+
+### 1. Database — AWS RDS (MySQL 8.0)
+1. In AWS Console, create an RDS instance: MySQL 8.0, `db.t3.micro`, public access **Yes**.
+2. Note the endpoint, port (3306), master user + password, and create a database named `helpdesk`.
+3. In the security group, allow inbound **MySQL/Aurora (3306)** from your EC2 security group.
+
+### 2. Backend — AWS EC2 (Ubuntu)
+1. Launch an Ubuntu 22.04 EC2 instance; attach a security group allowing inbound **SSH (22)** and **Custom TCP 4000**.
+2. SSH in and run the setup script:
+   ```bash
+   sudo bash deploy/ec2-setup.sh
+   ```
+   The script installs Node.js, clones the repo, installs dependencies, seeds RDS, and installs a systemd service (`helpdesk-api`) that keeps the API running.
+3. Edit `backend/.env` on the server and set `JWT_SECRET`, `DB_HOST`/`DB_USER`/`DB_PASSWORD`/`DB_NAME` (RDS values), `CORS_ORIGIN` to include your Vercel URL, and `APP_URL` to the Vercel URL. Then:
+   ```bash
+   sudo systemctl restart helpdesk-api
+   ```
+4. Verify: `curl http://<EC2-PUBLIC-IP>:4000/api/health`.
+
+### 3. Frontend — Vercel
+```bash
+cd frontend
+npx vercel --prod
+```
+Set the environment variable `NEXT_PUBLIC_API_URL` to `http://<EC2-PUBLIC-IP>:4000/api` (Project → Settings → Environment Variables) and redeploy.
+
+> Local development still uses SQLite. When `DB_HOST` is set in `backend/.env`, the app switches to MySQL (RDS) automatically.
+
 ## Demo Accounts
 | Role | Email | Password |
 |------|-------|----------|

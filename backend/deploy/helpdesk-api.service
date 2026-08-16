@@ -1,0 +1,16 @@
+[Unit]
+Description=HelpDesk Lite API
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/helpdesk/backend
+EnvironmentFile=/home/ubuntu/helpdesk/backend/.env
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

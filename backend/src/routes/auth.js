@@ -26,14 +26,14 @@ router.post('/register', async (req, res) => {
     : 'Customer';
 
   const normalizedEmail = email.trim().toLowerCase();
-  const existing = get('SELECT id FROM users WHERE email = ?', [normalizedEmail]);
+  const existing = await get('SELECT id FROM users WHERE email = ?', [normalizedEmail]);
   if (existing) {
     return res.status(409).json({ error: 'Email already registered' });
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
   const normalizedName = name.trim();
-  const result = run('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', [normalizedName, normalizedEmail, hashedPassword, userRole]);
+  const result = await run('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', [normalizedName, normalizedEmail, hashedPassword, userRole]);
   const userId = result.lastId;
 
   const token = jwt.sign({ id: userId, email: normalizedEmail, role: userRole, name: normalizedName }, process.env.JWT_SECRET, { expiresIn: '24h' });
@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
-  const user = get('SELECT * FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+  const user = await get('SELECT * FROM users WHERE email = ?', [email.trim().toLowerCase()]);
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -65,7 +65,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authenticate, async (req, res) => {
   await getDb();
-  const user = get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id]);
+  const user = await get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id]);
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }

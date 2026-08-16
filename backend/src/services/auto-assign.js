@@ -11,9 +11,9 @@ const SKILL_PROFILES = {
 async function ensureAgentSkills() {
   await getDb();
   for (const [email, skills] of Object.entries(SKILL_PROFILES)) {
-    const user = get('SELECT id FROM users WHERE email = ? AND is_bot = 0', [email]);
+    const user = await get('SELECT id FROM users WHERE email = ? AND is_bot = 0', [email]);
     if (user) {
-      run('UPDATE users SET skills = ? WHERE id = ?', [skills, user.id]);
+      await run('UPDATE users SET skills = ? WHERE id = ?', [skills, user.id]);
     }
   }
 }
@@ -23,9 +23,9 @@ function parseSkills(value) {
   return String(value).split(',').map(s => s.trim()).filter(Boolean);
 }
 
-function openWorkload(agentId) {
+async function openWorkload(agentId) {
   const placeholders = OPEN_STATUSES.map(() => '?').join(', ');
-  const row = get(`SELECT COUNT(*) AS count FROM tickets WHERE assigned_to = ? AND status IN (${placeholders})`, [agentId, ...OPEN_STATUSES]);
+  const row = await get(`SELECT COUNT(*) AS count FROM tickets WHERE assigned_to = ? AND status IN (${placeholders})`, [agentId, ...OPEN_STATUSES]);
   return row ? row.count : 0;
 }
 
@@ -46,12 +46,15 @@ function rankAgents(agents, category) {
     });
 }
 
-function pickBestAgent(ticket) {
-  const candidates = all(
+async function pickBestAgent(ticket) {
+  const candidates = await all(
     "SELECT id, name, email, skills FROM users WHERE role IN ('Agent','Admin') AND is_bot = 0 ORDER BY name",
-  ).map(agent => ({ ...agent, workload: openWorkload(agent.id) }));
-  if (candidates.length === 0) return null;
-  const ranked = rankAgents(candidates, ticket.category);
+  );
+  const withWorkload = await Promise.all(
+    candidates.map(async agent => ({ ...agent, workload: await openWorkload(agent.id) })),
+  );
+  if (withWorkload.length === 0) return null;
+  const ranked = rankAgents(withWorkload, ticket.category);
   return ranked[0];
 }
 
@@ -59,26 +62,26 @@ async function autoAssignTicket(ticket) {
   await getDb();
   if (ticket.assigned_to) return null;
 
-  const agent = pickBestAgent(ticket);
+  const agent = await pickBestAgent(ticket);
   if (!agent) return null;
 
-  run('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [agent.id, ticket.id]);
+  await run('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [agent.id, ticket.id]);
 
-  run('INSERT INTO comments (ticket_id, user_id, content, is_internal) VALUES (?, ?, ?, 1)', [
+  await run('INSERT INTO comments (ticket_id, user_id, content, is_internal) VALUES (?, ?, ?, 1)', [
     ticket.id,
     agent.id,
     `Auto-assigned to ${agent.name} (${ticket.category} skill match, workload ${agent.workload}).`,
   ]);
 
-  run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [
+  await run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [
     agent.id,
     `New ticket #${ticket.id} assigned to you: ${ticket.subject}`,
     ticket.id,
   ]);
 
-  const customer = get('SELECT id FROM users WHERE id = ?', [ticket.customer_id]);
+  const customer = await get('SELECT id FROM users WHERE id = ?', [ticket.customer_id]);
   if (customer) {
-    run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [
+    await run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [
       customer.id,
       `Your ticket #${ticket.id} has been assigned to ${agent.name}.`,
       ticket.id,

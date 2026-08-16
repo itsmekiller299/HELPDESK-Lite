@@ -34,9 +34,9 @@ async function ensureAutoAgents() {
   await getDb();
   const passwordHash = bcrypt.hashSync(BOT_PASSWORD, 10);
   for (const agent of AUTO_AGENTS) {
-    const existing = get('SELECT id FROM users WHERE email = ?', [agent.email]);
+    const existing = await get('SELECT id FROM users WHERE email = ?', [agent.email]);
     if (!existing) {
-      run('INSERT INTO users (name, email, password, role, is_bot) VALUES (?, ?, ?, ?, 1)', [
+      await run('INSERT INTO users (name, email, password, role, is_bot) VALUES (?, ?, ?, ?, 1)', [
         agent.name,
         agent.email,
         passwordHash,
@@ -74,16 +74,16 @@ function buildAutoResponse(ticket, agent) {
 async function autoRespondToTicket(ticket) {
   await getDb();
   const agent = pickAutoAgent(ticket);
-  const bot = get('SELECT id, name FROM users WHERE email = ?', [agent.email]);
+  const bot = await get('SELECT id, name FROM users WHERE email = ?', [agent.email]);
   if (!bot) return;
 
   const content = buildAutoResponse(ticket, agent);
-  run('INSERT INTO comments (ticket_id, user_id, content, is_internal) VALUES (?, ?, ?, 0)', [ticket.id, bot.id, content]);
-  run('UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE id = ?', [ticket.id]);
+  await run('INSERT INTO comments (ticket_id, user_id, content, is_internal) VALUES (?, ?, ?, 0)', [ticket.id, bot.id, content]);
+  await run('UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE id = ?', [ticket.id]);
 
-  const customer = get('SELECT id FROM users WHERE id = ?', [ticket.customer_id]);
+  const customer = await get('SELECT id FROM users WHERE id = ?', [ticket.customer_id]);
   if (customer) {
-    run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [
+    await run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [
       customer.id,
       `Auto response from ${bot.name} on ticket #${ticket.id}: ${ticket.subject}`,
       ticket.id,

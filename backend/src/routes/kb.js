@@ -26,7 +26,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 
   query += ' ORDER BY created_at DESC';
-  const articles = all(query, params);
+  const articles = await all(query, params);
   res.json(articles);
 });
 
@@ -39,7 +39,7 @@ router.get('/suggest', authenticate, async (req, res) => {
     return res.json([]);
   }
 
-  const articles = all('SELECT * FROM knowledge_base');
+  const articles = await all('SELECT * FROM knowledge_base');
 
   const scored = articles.map(article => {
     const titleLower = article.title.toLowerCase();
@@ -66,8 +66,8 @@ router.post('/', authenticate, requireRole('Admin'), async (req, res) => {
     return res.status(400).json({ error: 'Title, body, and category are required' });
   }
 
-  const result = run('INSERT INTO knowledge_base (title, body, category, created_by) VALUES (?, ?, ?, ?)', [title, body, category, req.user.id]);
-  const article = get('SELECT * FROM knowledge_base WHERE id = ?', [result.lastId]);
+  const result = await run('INSERT INTO knowledge_base (title, body, category, created_by) VALUES (?, ?, ?, ?)', [title, body, category, req.user.id]);
+  const article = await get('SELECT * FROM knowledge_base WHERE id = ?', [result.lastId]);
   res.status(201).json(article);
 });
 
@@ -75,25 +75,25 @@ router.put('/:id', authenticate, requireRole('Admin'), async (req, res) => {
   await getDb();
   const { title, body, category } = req.body;
 
-  const existing = get('SELECT * FROM knowledge_base WHERE id = ?', [req.params.id]);
+  const existing = await get('SELECT * FROM knowledge_base WHERE id = ?', [req.params.id]);
   if (!existing) {
     return res.status(404).json({ error: 'Article not found' });
   }
 
-  run('UPDATE knowledge_base SET title = ?, body = ?, category = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [title || existing.title, body || existing.body, category || existing.category, req.params.id]);
+  await run('UPDATE knowledge_base SET title = ?, body = ?, category = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [title || existing.title, body || existing.body, category || existing.category, req.params.id]);
 
-  const updated = get('SELECT * FROM knowledge_base WHERE id = ?', [req.params.id]);
+  const updated = await get('SELECT * FROM knowledge_base WHERE id = ?', [req.params.id]);
   res.json(updated);
 });
 
 router.delete('/:id', authenticate, requireRole('Admin'), async (req, res) => {
   await getDb();
-  const existing = get('SELECT * FROM knowledge_base WHERE id = ?', [req.params.id]);
+  const existing = await get('SELECT * FROM knowledge_base WHERE id = ?', [req.params.id]);
   if (!existing) {
     return res.status(404).json({ error: 'Article not found' });
   }
 
-  run('DELETE FROM knowledge_base WHERE id = ?', [req.params.id]);
+  await run('DELETE FROM knowledge_base WHERE id = ?', [req.params.id]);
   res.json({ message: 'Article deleted' });
 });
 

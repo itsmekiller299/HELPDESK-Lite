@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/:ticketId', authenticate, async (req, res) => {
   await getDb();
-  const ticket = get('SELECT * FROM tickets WHERE id = ?', [req.params.ticketId]);
+  const ticket = await get('SELECT * FROM tickets WHERE id = ?', [req.params.ticketId]);
 
   if (!ticket) {
     return res.status(404).json({ error: 'Ticket not found' });
@@ -20,14 +20,14 @@ router.get('/:ticketId', authenticate, async (req, res) => {
 
   let comments;
   if (req.user.role === 'Customer') {
-    comments = all(`
+    comments = await all(`
       SELECT c.*, u.name as user_name, u.role as user_role
       FROM comments c JOIN users u ON c.user_id = u.id
       WHERE c.ticket_id = ? AND c.is_internal = 0
       ORDER BY c.created_at ASC
     `, [req.params.ticketId]);
   } else {
-    comments = all(`
+    comments = await all(`
       SELECT c.*, u.name as user_name, u.role as user_role
       FROM comments c JOIN users u ON c.user_id = u.id
       WHERE c.ticket_id = ?
@@ -47,7 +47,7 @@ router.post('/:ticketId', authenticate, async (req, res) => {
     return res.status(400).json({ error: contentError });
   }
 
-  const ticket = get('SELECT * FROM tickets WHERE id = ?', [req.params.ticketId]);
+  const ticket = await get('SELECT * FROM tickets WHERE id = ?', [req.params.ticketId]);
 
   if (!ticket) {
     return res.status(404).json({ error: 'Ticket not found' });
@@ -80,22 +80,22 @@ router.post('/:ticketId', authenticate, async (req, res) => {
     attachmentData = attachment.data;
   }
   const internal = is_internal && req.user.role !== 'Customer' ? 1 : 0;
-  const result = run('INSERT INTO comments (ticket_id, user_id, content, is_internal, attachment_name, attachment_type, attachment_data) VALUES (?, ?, ?, ?, ?, ?, ?)', [req.params.ticketId, req.user.id, content.trim(), internal, attachmentName, attachmentType, attachmentData]);
+  const result = await run('INSERT INTO comments (ticket_id, user_id, content, is_internal, attachment_name, attachment_type, attachment_data) VALUES (?, ?, ?, ?, ?, ?, ?)', [req.params.ticketId, req.user.id, content.trim(), internal, attachmentName, attachmentType, attachmentData]);
 
-  run('UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.ticketId]);
+  await run('UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.ticketId]);
 
-  const comment = get(`
+  const comment = await get(`
     SELECT c.*, u.name as user_name, u.role as user_role
     FROM comments c JOIN users u ON c.user_id = u.id
     WHERE c.id = ?
   `, [result.lastId]);
 
-  const recipients = all(
+  const recipients = await all(
     'SELECT id, name, email FROM users WHERE id IN (?, ?) AND id != ?',
     [ticket.customer_id, ticket.assigned_to || ticket.customer_id, req.user.id],
   );
-  recipients.forEach(recipient => {
-    run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [recipient.id, `New reply on ticket #${ticket.id}: ${ticket.subject}`, ticket.id]);
+  for (const recipient of recipients) {
+    await run('INSERT INTO notifications (user_id, message, ticket_id) VALUES (?, ?, ?)', [recipient.id, `New reply on ticket #${ticket.id}: ${ticket.subject}`, ticket.id]);
     // Internal notes are never sent outside the staff team.
     if (!internal || recipient.id !== ticket.customer_id) {
       void sendTicketEmail({
@@ -106,7 +106,7 @@ router.post('/:ticketId', authenticate, async (req, res) => {
         preview: `${req.user.name} replied: ${content.trim().slice(0, 240)}`,
       });
     }
-  });
+  }
 
   res.status(201).json(comment);
 });

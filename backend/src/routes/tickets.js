@@ -79,9 +79,9 @@ router.get('/', authenticate, async (req, res) => {
   let tickets;
 
   if (req.user.role === 'Customer') {
-    tickets = all('SELECT * FROM tickets WHERE customer_id = ? ORDER BY created_at DESC', [req.user.id]);
+    tickets = await all('SELECT * FROM tickets WHERE customer_id = ? ORDER BY created_at DESC', [req.user.id]);
   } else {
-    tickets = all('SELECT * FROM tickets ORDER BY created_at DESC');
+    tickets = await all('SELECT * FROM tickets ORDER BY created_at DESC');
   }
 
   const enriched = tickets.map(t => ({
@@ -103,7 +103,7 @@ router.get('/suggest-classify', authenticate, (req, res) => {
 
 router.get('/:id', authenticate, async (req, res) => {
   await getDb();
-  const ticket = get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
+  const ticket = await get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
 
   if (!ticket) {
     return res.status(404).json({ error: 'Ticket not found' });
@@ -113,15 +113,15 @@ router.get('/:id', authenticate, async (req, res) => {
     return res.status(403).json({ error: 'Access denied' });
   }
 
-  const assignee = ticket.assigned_to ? get('SELECT id, name, email FROM users WHERE id = ?', [ticket.assigned_to]) : null;
-  const customer = get('SELECT id, name, email FROM users WHERE id = ?', [ticket.customer_id]);
+  const assignee = ticket.assigned_to ? await get('SELECT id, name, email FROM users WHERE id = ?', [ticket.assigned_to]) : null;
+  const customer = await get('SELECT id, name, email FROM users WHERE id = ?', [ticket.customer_id]);
 
   res.json({ ...ticket, sla: computeSLA(ticket.priority, ticket.created_at), assignee, customer });
 });
 
 router.get('/:id/summary', authenticate, async (req, res) => {
   await getDb();
-  const ticket = get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
+  const ticket = await get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
 
   if (!ticket) {
     return res.status(404).json({ error: 'Ticket not found' });
@@ -132,15 +132,15 @@ router.get('/:id/summary', authenticate, async (req, res) => {
   }
 
   const internalFilter = req.user.role === 'Customer' ? 'AND c.is_internal = 0' : '';
-  const comments = all(`
+  const comments = await all(`
     SELECT c.content, c.created_at, u.name as user_name, u.role as user_role
     FROM comments c JOIN users u ON c.user_id = u.id
     WHERE c.ticket_id = ? ${internalFilter}
     ORDER BY c.created_at ASC
   `, [req.params.id]);
 
-  const assignee = ticket.assigned_to ? get('SELECT name FROM users WHERE id = ?', [ticket.assigned_to]) : null;
-  const customer = get('SELECT name FROM users WHERE id = ?', [ticket.customer_id]);
+  const assignee = ticket.assigned_to ? await get('SELECT name FROM users WHERE id = ?', [ticket.assigned_to]) : null;
+  const customer = await get('SELECT name FROM users WHERE id = ?', [ticket.customer_id]);
   const lastComment = comments[comments.length - 1];
 
   const summary = summarizeConversation({
@@ -184,9 +184,9 @@ router.post('/', authenticate, async (req, res) => {
   const finalPriority = validPriorities.includes(priority) ? priority : suggestedPriority;
   const autoSuggested = (!category && !priority) ? 1 : (category !== suggestedCategory || priority !== suggestedPriority) ? 1 : 0;
 
-  const result = run('INSERT INTO tickets (subject, description, category, priority, status, customer_id, auto_suggested) VALUES (?, ?, ?, ?, ?, ?, ?)', [subject.trim(), description.trim(), finalCategory, finalPriority, 'Open', req.user.id, autoSuggested]);
+  const result = await run('INSERT INTO tickets (subject, description, category, priority, status, customer_id, auto_suggested) VALUES (?, ?, ?, ?, ?, ?, ?)', [subject.trim(), description.trim(), finalCategory, finalPriority, 'Open', req.user.id, autoSuggested]);
 
-  const ticket = get('SELECT * FROM tickets WHERE id = ?', [result.lastId]);
+  const ticket = await get('SELECT * FROM tickets WHERE id = ?', [result.lastId]);
   const assignee = await autoAssignTicket(ticket);
   void sendTicketEmail({
     to: req.user.email,
@@ -202,7 +202,7 @@ router.post('/', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, requireRole('Admin', 'Agent'), async (req, res) => {
   await getDb();
   const { status, assigned_to } = req.body;
-  const ticket = get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
+  const ticket = await get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
 
   if (!ticket) {
     return res.status(404).json({ error: 'Ticket not found' });
@@ -213,7 +213,7 @@ router.patch('/:id', authenticate, requireRole('Admin', 'Agent'), async (req, re
     if (!allowed.includes(status)) {
       return res.status(400).json({ error: `Cannot transition from ${ticket.status} to ${status}` });
     }
-    run('UPDATE tickets SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, req.params.id]);
+    await run('UPDATE tickets SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, req.params.id]);
   }
 
   if (assigned_to !== undefined) {
@@ -221,13 +221,13 @@ router.patch('/:id', authenticate, requireRole('Admin', 'Agent'), async (req, re
     if (assigned_to !== null && !assignee) {
       return res.status(400).json({ error: 'assigned_to must be a valid user id or null' });
     }
-    if (assignee && !get("SELECT id FROM users WHERE id = ? AND role IN ('Admin', 'Agent')", [assignee])) {
+    if (assignee && !(await get("SELECT id FROM users WHERE id = ? AND role IN ('Admin', 'Agent')", [assignee]))) {
       return res.status(400).json({ error: 'Ticket assignee must be an agent or administrator' });
     }
-    run('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [assignee, req.params.id]);
+    await run('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [assignee, req.params.id]);
   }
 
-  const updated = get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
+  const updated = await get('SELECT * FROM tickets WHERE id = ?', [req.params.id]);
   res.json({ ...updated, sla: computeSLA(updated.priority, updated.created_at) });
 });
 
