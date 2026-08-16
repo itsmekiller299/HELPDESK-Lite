@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Ticket, BookOpen, BarChart3, LogOut, Menu, X, Bell, Moon, Sun, UserRound } from 'lucide-react';
+import Logo from '@/components/Logo';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import type { Notification } from '@/lib/types';
@@ -55,9 +56,7 @@ export default function Navbar() {
     <nav className="glass fixed top-0 left-0 right-0 z-50 px-4 py-3" style={{ borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'var(--gradient-primary)', color: '#fff' }}>
-            <Ticket size={18} />
-          </div>
+          <Logo size={32} />
           <span className="text-lg font-bold text-white">HelpDesk Lite</span>
         </Link>
 

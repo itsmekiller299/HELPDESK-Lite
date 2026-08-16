@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { Ticket, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -45,8 +46,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="glass w-full max-w-md p-8 animate-in">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--gradient-primary)', color: '#fff' }}>
-            <Ticket size={28} />
+          <div className="flex justify-center mb-4">
+            <Logo size={56} />
           </div>
           <h1 className="text-2xl font-bold text-white mb-1">HelpDesk Lite</h1>
           <p className="text-gray-400 text-sm">{isRegister ? 'Create your account' : 'Sign in to your account'}</p>
