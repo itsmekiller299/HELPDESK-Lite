@@ -17,6 +17,15 @@ A lightweight customer support ticketing platform built for a district-level hac
 6. **Dashboard & Analytics** — Real aggregation queries, Recharts bar/pie charts
 7. **Knowledge Base** — Admin CRUD, keyword-match ticket deflection suggestions
 8. **LiquidGlass UI** — Frosted glass, soft shadows, gradients, responsive design
+9. **Conversation TL;DR** — One-click AI-style summary of the full ticket thread (key points, open questions, participants) for agents joining mid-ticket
+
+## Run Locally
+
+After setup, open the app in your browser:
+
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:4000
+- **API health check:** http://localhost:4000/api/health
 
 ## Setup
 
