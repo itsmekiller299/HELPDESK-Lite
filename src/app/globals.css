@@ -1,26 +1,327 @@
 @import "tailwindcss";
 
+html {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-sky: #a7ebf2;
+  --color-teal: #54acbf;
+  --color-steel: #26658c;
+  --color-ocean: #023859;
+  --color-navy: #011c40;
+
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(167, 235, 242, 0.22);
+  --glass-shadow: 0 8px 32px rgba(2, 56, 89, 0.35);
+  --glass-shadow-lg: 0 16px 48px rgba(2, 56, 89, 0.45);
+  --glass-inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  --gradient-primary: linear-gradient(135deg, #26658c 0%, #023859 100%);
+  --gradient-accent: linear-gradient(135deg, #54acbf 0%, #26658c 100%);
+  --gradient-teal: linear-gradient(135deg, #a7ebf2 0%, #54acbf 100%);
+  --gradient-bg: linear-gradient(135deg, #011c40 0%, #023859 30%, #26658c 60%, #011c40 100%);
+  --chart-grid: rgba(255, 255, 255, 0.12);
+  --chart-axis: #9fb6c9;
+  --chart-tooltip-bg: rgba(2, 56, 89, 0.95);
+  --chart-tooltip-border: rgba(167, 235, 242, 0.25);
+  --chart-tooltip-text: #e2f6fa;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-theme='light'] {
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(38, 101, 140, 0.2);
+  --glass-shadow: 0 8px 32px rgba(2, 56, 89, 0.12);
+  --glass-shadow-lg: 0 16px 48px rgba(2, 56, 89, 0.18);
+  --glass-inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  --gradient-primary: linear-gradient(135deg, #26658c 0%, #023859 100%);
+  --gradient-accent: linear-gradient(135deg, #54acbf 0%, #26658c 100%);
+  --gradient-teal: linear-gradient(135deg, #a7ebf2 0%, #54acbf 100%);
+  --gradient-bg: linear-gradient(135deg, #a7ebf2 0%, #eaf7fb 30%, #d6edf5 55%, #bfe0ea 100%);
+  --chart-grid: rgba(2, 56, 89, 0.15);
+  --chart-axis: #26658c;
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.96);
+  --chart-tooltip-border: rgba(38, 101, 140, 0.3);
+  --chart-tooltip-text: #023859;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme='light'] body { color: #023859; }
+:root[data-theme='light'] .glass-card,
+:root[data-theme='light'] .glass-sm { background: rgba(255, 255, 255, 0.82); }
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--gradient-bg);
+  min-height: 100vh;
+  color: #e2f6fa;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+  border-radius: 1.5rem;
+}
+
+.glass-sm {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  box-shadow: 0 12px 40px rgba(2, 56, 89, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  border-color: rgba(167, 235, 242, 0.35);
+  transform: translateY(-2px);
+}
+
+@layer components {
+  .glass-input {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.875rem;
+    color: #e2e8f0;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+    outline: none;
+    width: 100%;
+  }
+
+  .glass-input:focus {
+    border-color: rgba(84, 172, 191, 0.7);
+    box-shadow: 0 0 0 3px rgba(84, 172, 191, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-input::placeholder {
+    color: rgba(226, 246, 250, 0.4);
+  }
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(2, 56, 89, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(2, 56, 89, 0.55);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  color: #e2e8f0;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.badge-open { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+.badge-inprogress { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-resolved { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+.badge-closed { background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.3); }
+.badge-reopened { background: rgba(168, 85, 247, 0.2); color: #c4b5fd; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+.badge-low { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+.badge-medium { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-high { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-critical { background: rgba(220, 38, 38, 0.3); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.4); }
+
+.badge-ontrack { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+.badge-atrisk { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-breached { background: rgba(220, 38, 38, 0.3); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.4); }
+
+.badge-technical { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+.badge-billing { background: rgba(168, 85, 247, 0.2); color: #c4b5fd; border: 1px solid rgba(168, 85, 247, 0.3); }
+.badge-general { background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.3); }
+
+.aurora-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.aurora-bg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 20% 50%, rgba(167, 235, 242, 0.2) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(84, 172, 191, 0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(38, 101, 140, 0.18) 0%, transparent 50%);
+  animation: aurora 20s ease-in-out infinite alternate;
+}
+
+@keyframes aurora {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(3deg) scale(1.05); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.animate-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+select.glass-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e2e8f0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+select.glass-input option {
+  background: #011c40;
+  color: #e2f6fa;
+}
+
+/* ============ LIGHT THEME OVERRIDES ============
+   Tailwind utilities live in @layer utilities, which lose to unlayered CSS.
+   These rules remap the dark-theme hardcoded colors so light mode stays readable.
+   Palette: Sky #A7EBF2 · Teal #54ACBF · Steel #26658C · Ocean #023859 · Navy #011C40
+*/
+:root[data-theme='light'] body { color: #023859; }
+
+:root[data-theme='light'] .text-white { color: #023859; }
+:root[data-theme='light'] .text-gray-200 { color: #26658c; }
+:root[data-theme='light'] .text-gray-300 { color: #26658c; }
+:root[data-theme='light'] .text-gray-400 { color: #26658c; }
+:root[data-theme='light'] .text-gray-500 { color: #54acbf; }
+:root[data-theme='light'] .text-gray-600 { color: #26658c; }
+:root[data-theme='light'] .text-purple-200 { color: #26658c; }
+:root[data-theme='light'] .text-purple-300 { color: #023859; }
+:root[data-theme='light'] .text-purple-400 { color: #26658c; }
+:root[data-theme='light'] .text-purple-500 { color: #023859; }
+:root[data-theme='light'] .text-teal-300 { color: #26658c; }
+:root[data-theme='light'] .text-teal-400 { color: #26658c; }
+:root[data-theme='light'] .text-red-300 { color: #c0392b; }
+:root[data-theme='light'] .text-red-400 { color: #c0392b; }
+
+:root[data-theme='light'] .hover\:text-white:hover { color: #023859; }
+:root[data-theme='light'] .hover\:text-gray-200:hover { color: #011c40; }
+:root[data-theme='light'] .hover\:text-purple-300:hover { color: #011c40; }
+:root[data-theme='light'] .hover\:text-purple-200:hover { color: #011c40; }
+
+:root[data-theme='light'] .glass-input {
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #023859;
+  border-color: rgba(38, 101, 140, 0.25);
+}
+:root[data-theme='light'] .glass-input:focus {
+  border-color: rgba(38, 101, 140, 0.6);
+  box-shadow: 0 0 0 3px rgba(84, 172, 191, 0.25);
+  background-color: #ffffff;
+}
+:root[data-theme='light'] .glass-input::placeholder { color: #54acbf; }
+
+:root[data-theme='light'] .btn-secondary {
+  background: rgba(255, 255, 255, 0.85);
+  color: #023859;
+  border-color: rgba(38, 101, 140, 0.25);
+}
+:root[data-theme='light'] .btn-secondary:hover {
+  background: #ffffff;
+  border-color: rgba(38, 101, 140, 0.45);
+}
+
+:root[data-theme='light'] .glass {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(38, 101, 140, 0.2);
+}
+
+:root[data-theme='light'] select.glass-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23023859' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+}
+:root[data-theme='light'] select.glass-input option { background: #ffffff; color: #023859; }
+
+:root[data-theme='light'] .aurora-bg::before {
+  background: radial-gradient(ellipse at 20% 50%, rgba(167, 235, 242, 0.6) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, rgba(84, 172, 191, 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(38, 101, 140, 0.25) 0%, transparent 50%);
+}
+
+/* Comments / chips that use dark translucent backgrounds in light mode */
+:root[data-theme='light'] .bg-white\/5 { background: rgba(255, 255, 255, 0.65); }
+:root[data-theme='light'] .bg-white\/10 { background: rgba(84, 172, 191, 0.15); }
+:root[data-theme='light'] .hover\:bg-white\/10:hover { background: rgba(84, 172, 191, 0.12); }
+:root[data-theme='light'] .hover\:bg-white\/5:hover { background: rgba(84, 172, 191, 0.08); }
+:root[data-theme='light'] .border-white\/10 { border-color: rgba(38, 101, 140, 0.15); }
+:root[data-theme='light'] .border-white\/20 { border-color: rgba(38, 101, 140, 0.2); }
+:root[data-theme='light'] .bg-\[\#0c0e1a\] { background: #eaf7fb; }
+
+/* Badges: dark translucent bg + light text is unreadable on a light card */
+:root[data-theme='light'] .badge-open,
+:root[data-theme='light'] .badge-technical { background: #a7ebf2; color: #023859; border-color: #54acbf; }
+:root[data-theme='light'] .badge-inprogress,
+:root[data-theme='light'] .badge-medium,
+:root[data-theme='light'] .badge-atrisk { background: #ffe8c2; color: #7a4d00; border-color: #f0b429; }
+:root[data-theme='light'] .badge-resolved,
+:root[data-theme='light'] .badge-low,
+:root[data-theme='light'] .badge-ontrack { background: #d8f5df; color: #14532d; border-color: #4ade80; }
+:root[data-theme='light'] .badge-closed,
+:root[data-theme='light'] .badge-general { background: #e5e7eb; color: #374151; border-color: #9ca3af; }
+:root[data-theme='light'] .badge-reopened,
+:root[data-theme='light'] .badge-billing { background: #ede9fe; color: #4c1d95; border-color: #a78bfa; }
+:root[data-theme='light'] .badge-high,
+:root[data-theme='light'] .badge-critical,
+:root[data-theme='light'] .badge-breached { background: #fee2e2; color: #7f1d1d; border-color: #fca5a5; }

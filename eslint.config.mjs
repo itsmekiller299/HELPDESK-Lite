@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Local storage restoration and request-driven state updates are deliberate
+      // synchronization effects in this client application.
+      "react-hooks/set-state-in-effect": "off",
+      // These modules are not React components, so Next router hooks cannot be used.
+      "@next/next/no-location-assign-relative-destination": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
