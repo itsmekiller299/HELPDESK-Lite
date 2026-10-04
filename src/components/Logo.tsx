@@ -1,6 +1,6 @@
 'use client';
 
-export default function Logo({ size = 32, className = '', src = '/brand/she-navbar-logo-light.png' }: { size?: number; className?: string; src?: string }) {
+export default function Logo({ size = 32, className = '', src = '/brand/she-logo-dark.svg' }: { size?: number; className?: string; src?: string }) {
   return (
     <div
       className={`relative flex items-center justify-center rounded-xl shrink-0 ${className}`}
