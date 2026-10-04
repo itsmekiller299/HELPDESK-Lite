@@ -24,7 +24,7 @@ type Comment = {
 };
 
 function isComment(comment: unknown): comment is Comment {
-  return typeof comment === 'object' && comment !== null && 'id' in comment;
+  return typeof comment === 'object' && comment !== null && 'id' in comment && typeof (comment as Comment).id === 'number';
 }
 
 export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -197,8 +197,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   className="glass-input w-auto text-sm py-1"
                 >
                   <option value="">Unassigned</option>
-                  {agents.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
+                  {agents.map((a, i) => (
+                    <option key={a.id ?? i} value={a.id ?? i}>{a.name}</option>
                   ))}
                 </select>
               </div>
@@ -215,9 +215,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <p className="text-gray-400 text-sm text-center py-4">No comments yet. Start the conversation below.</p>
           ) : (
             <div className="space-y-3 mb-6">
-              {comments.map(comment => (
+              {comments.map((comment, i) => (
                 <div
-                  key={comment.id}
+                  key={comment.id ?? i}
                   className={`p-4 rounded-xl ${
                     comment.is_internal
                       ? 'bg-amber-500/10 border border-amber-500/20'

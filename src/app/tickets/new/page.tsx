@@ -166,7 +166,7 @@ export default function NewTicketPage() {
             </div>
             <div className="space-y-3">
               {kbSuggestions.map(article => (
-                <div key={article.id} className="glass-sm p-4">
+                <div key={article.id?.toString()} className="glass-sm p-4">
                   <h4 className="text-white font-medium text-sm mb-1">{article.title}</h4>
                   <p className="text-gray-400 text-xs line-clamp-2">{article.body}</p>
                   <Link href="/kb" className="text-xs text-purple-400 hover:text-purple-300 mt-2 inline-block">

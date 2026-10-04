@@ -96,8 +96,8 @@ export default function TicketsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map(ticket => (
-              <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
+            {filtered.map((ticket, i) => (
+              <Link key={`${ticket.id}-${i}`} href={`/tickets/${ticket.id}`}>
                 <div className="glass-card p-4 cursor-pointer">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">

@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
 
+const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const apiHost = apiBase.replace('/api', '');
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiHost}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

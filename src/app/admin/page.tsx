@@ -8,7 +8,7 @@ import { BarChart3, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import type { AnalyticsData } from '@/lib/types';
 
-const COLORS = ['#26658c', '#023859', '#54acbf', '#a7ebf2', '#011c40'];
+const COLORS = ['#d94c9a', '#f06cb5', '#ef9aca', '#111111', '#9c9ca4'];
 
 export default function AnalyticsPage() {
   const { user, loading } = useAuth();
@@ -96,8 +96,8 @@ export default function AnalyticsPage() {
                     <Bar dataKey="count" fill="url(#gradient)" radius={[6, 6, 0, 0]} />
                     <defs>
                       <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#54acbf" />
-                        <stop offset="100%" stopColor="#26658c" />
+                        <stop offset="0%" stopColor="#f06cb5" />
+                        <stop offset="100%" stopColor="#d94c9a" />
                       </linearGradient>
                     </defs>
                   </BarChart>
@@ -144,8 +144,8 @@ export default function AnalyticsPage() {
               <div className="glass-card p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Recent Tickets</h3>
                 <div className="space-y-3">
-                  {data.recentTickets.map(ticket => (
-                    <div key={ticket.id} className="glass-sm p-3">
+                  {data.recentTickets.map((ticket, i) => (
+                    <div key={`ticket-${ticket.id}-${i}`} className="glass-sm p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs text-gray-500 font-mono">#{ticket.id}</span>
                         <span className="text-sm text-white font-medium truncate">{ticket.subject}</span>

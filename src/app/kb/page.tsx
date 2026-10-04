@@ -115,8 +115,8 @@ export default function KBPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {articles.map(article => (
-              <div key={article.id} className="glass-card p-5 cursor-pointer" onClick={() => setExpanded(expanded === article.id ? null : article.id)}>
+            {articles.map((article, i) => (
+              <div key={`${article.id}-${i}`} className="glass-card p-5 cursor-pointer" onClick={() => setExpanded(expanded === article.id ? null : article.id)}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">

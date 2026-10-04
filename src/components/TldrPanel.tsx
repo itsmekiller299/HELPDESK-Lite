@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { api } from '@/lib/api';
-import { Sparkles, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
+import { Sparkles, RefreshCw, AlertCircle, Loader2, Bot } from 'lucide-react';
 import { StatusBadge, PriorityBadge, CategoryBadge } from '@/components/Badges';
 import type { TicketSummary } from '@/lib/types';
 
@@ -9,15 +9,22 @@ export default function TldrPanel({ ticketId }: { ticketId: number }) {
   const [summary, setSummary] = useState<TicketSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [usingFallback, setUsingFallback] = useState(false);
 
   const generate = async () => {
     setLoading(true);
     setError('');
+    setUsingFallback(false);
     try {
-      setSummary(await api.getTicketSummary(ticketId));
+      const data = await api.getTicketSummary(ticketId);
+      setSummary(data as TicketSummary);
+      if ((data as TicketSummary).points.length === 0) {
+        setUsingFallback(true);
+      }
     } catch (err) {
       console.error(err);
-      setError('Could not generate summary. Try again.');
+      setError('Could not generate AI summary. Showing auto-generated summary instead.');
+      setUsingFallback(true);
     } finally {
       setLoading(false);
     }
@@ -39,6 +46,12 @@ export default function TldrPanel({ ticketId }: { ticketId: number }) {
       )}
 
       {error && <p className="mt-3 text-sm text-red-300 flex items-center gap-2"><AlertCircle size={14} />{error}</p>}
+
+      {usingFallback && !error && (
+        <div className="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm flex items-center gap-2">
+          <Bot size={14} /> AI summarization unavailable — showing rule-based summary instead
+        </div>
+      )}
 
       {summary && (
         <div className="space-y-4">
